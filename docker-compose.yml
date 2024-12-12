@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+
+  db:
+    image: postgres
+    container_name: customer_service_db
+    environment:
+      POSTGRES_USER: ravil
+      POSTGRES_PASSWORD: ravil
+      POSTGRES_DB: customer_service_database
+    ports:
+      - "5432:5432"
+
+  customer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customer_service_app
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "5005:5005"
+    depends_on:
+      - db
+
