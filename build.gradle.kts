@@ -49,7 +49,7 @@ tasks.withType<Test> {
 
 checkstyle {
 	toolVersion = "10.20.2"
-	configFile = file("src/main/resources/sun_checks.xml")
+	configFile = file("src/main/resources/checkstyle.xml")
 }
 
 
