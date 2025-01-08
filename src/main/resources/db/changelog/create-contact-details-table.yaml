@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-contact-details-table
+      author: Ravil Allayarov
+      changes:
+        - createTable:
+            tableName: contact_details
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: guid
+                  type: UUID
+                  constraints:
+                    nullable: true
+              - column:
+                  name: email
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: telegram_id
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
