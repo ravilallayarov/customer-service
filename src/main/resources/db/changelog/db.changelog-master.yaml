@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/changeset1.yaml
+      file: db/changelog/create-contact-details-table.yaml
+  - include:
+      file: db/changelog/create-and-insert-country-table.yaml
+  - include:
+      file: db/changelog/create-customer-table.yaml
