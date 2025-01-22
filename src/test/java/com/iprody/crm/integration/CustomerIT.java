@@ -1,6 +1,8 @@
 package com.iprody.crm.integration;
 
-import org.junit.jupiter.api.Test;
+import com.iprody.crm.repository.ContactDetailsRepository;
+import com.iprody.crm.repository.CustomerRepository;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,22 +15,19 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static com.iprody.crm.testdata.TestObjectFactory.*;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
 @Testcontainers
 public class CustomerIT {
     @Autowired
+    private CustomerRepository customerRepository;
+    @Autowired
+    private ContactDetailsRepository contactDetailsRepository;
+    @Autowired
     private WebTestClient webTestClient;
-
-    private static final String CUSTOMER_NAME = "Ravil";
-    private static final String CUSTOMER_SURNAME = "Allayarov";
-    private static final String COUNTRY_CODE = "RUS";
-    private static final String COUNTRY_NAME = "Russia";
-    private static final String EMAIL = "test@mail.ru";
-    private static final String TELEGRAM_ID = "@test";
-    private static final Long ID = 1L;
-
     @Container
     private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("testDb")
@@ -42,18 +41,56 @@ public class CustomerIT {
         registry.add("spring.datasource.password", POSTGRE_SQL_CONTAINER::getPassword);
     }
 
+    /**
+     * Очистка базы данных перед каждым тестом и сброс sequences
+     */
+    @BeforeEach
+    public void cleanup() {
+        customerRepository.deleteAll();
+        customerRepository.resetAutoIncrement();
+        contactDetailsRepository.resetAutoIncrement();
+    }
+
 
     @Test
     public void save_customer_successfully() {
         String request = jsonRequestForCreateCustomer();
 
-        webTestClient.post()
+        WebTestClient.ResponseSpec customerResponse = webTestClient.post()
                 .uri("/customers/new")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
-                .expectStatus().isCreated()
-                .expectBody()
+                .expectStatus().isCreated();
+        checkCustomerResponse(customerResponse);
+    }
+
+    @Test
+    public void findById_successfully_found() {
+        String request = jsonRequestForCreateCustomer();
+        webTestClient.post()
+                .uri("/customers/new")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange();
+
+        WebTestClient.ResponseSpec customerResponse = webTestClient.get()
+                .uri(String.format("/customers/%s", ID))
+                .exchange()
+                .expectStatus().isOk();
+        checkCustomerResponse(customerResponse);
+    }
+
+    @Test
+    public void findById_throw_notFoundException() {
+        webTestClient.get()
+                .uri(String.format("/customers/%d", 2))
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    private void checkCustomerResponse(WebTestClient.ResponseSpec response) {
+        response.expectBody()
                 .jsonPath("$.id").isEqualTo(ID)
                 .jsonPath("$.name").isEqualTo(CUSTOMER_NAME)
                 .jsonPath("$.surname").isEqualTo(CUSTOMER_SURNAME)
@@ -65,20 +102,19 @@ public class CustomerIT {
                 .jsonPath("$.contactDetailsDTO.telegramId").isEqualTo(TELEGRAM_ID);
     }
 
-
-    public String jsonRequestForCreateCustomer() {
-        return """
+    private String jsonRequestForCreateCustomer() {
+        return String.format("""
                 {
-                   "name":"Ravil",
-                   "surname":"Allayarov",
+                   "name":"%s",
+                   "surname":"%s",
                    "countryDTO":{
-                      "id":1
+                      "id":%d
                    },
                    "contactDetailsDTO":{
-                      "email":"test@mail.ru",
-                      "telegramId":"@test"
+                      "email":"%s",
+                      "telegramId":"%s"
                    }
                 }
-                """;
+                """, CUSTOMER_NAME, CUSTOMER_SURNAME, ID, EMAIL, TELEGRAM_ID);
     }
 }
