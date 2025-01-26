@@ -7,6 +7,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,8 @@ import java.util.UUID;
 @Table(name = "countries")
 @Data
 @EqualsAndHashCode(callSuper = false)
+@SuperBuilder
+@NoArgsConstructor
 public class Country extends BaseEntity {
     @Column(nullable = true)
     private UUID guid;

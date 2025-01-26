@@ -5,4 +5,5 @@ import reactor.core.publisher.Mono;
 
 public interface CustomerService {
     Mono<CustomerDTO> save(CustomerDTO customerDTO);
+    Mono<CustomerDTO> findById(Long id);
 }

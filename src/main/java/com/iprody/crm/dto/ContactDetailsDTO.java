@@ -4,11 +4,13 @@ import com.iprody.crm.validator.ValidTelegram;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
+@Builder
 public class ContactDetailsDTO {
     private Long id;
     private UUID guid;

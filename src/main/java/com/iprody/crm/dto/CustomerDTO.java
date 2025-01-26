@@ -3,12 +3,14 @@ package com.iprody.crm.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 
 import java.util.UUID;
 
 @Data
+@Builder
 public class CustomerDTO {
     private Long id;
     private UUID guid;
