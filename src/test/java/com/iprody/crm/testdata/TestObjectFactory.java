@@ -1,13 +1,15 @@
 package com.iprody.crm.testdata;
 
-import com.iprody.crm.dto.ContactDetailsDTO;
-import com.iprody.crm.dto.CountryDTO;
-import com.iprody.crm.dto.CustomerDTO;
+import com.iprody.crm.dto.create.ContactDetailsDTO;
+import com.iprody.crm.dto.create.CountryDTO;
+import com.iprody.crm.dto.create.CustomerDTO;
+import com.iprody.crm.dto.update.CustomerUpdateDTO;
 import com.iprody.crm.entity.ContactDetails;
 import com.iprody.crm.entity.Country;
 import com.iprody.crm.entity.Customer;
 
 public class TestObjectFactory {
+    //create
     public static final CountryDTO COUNTRY_DTO_BEFORE_SAVE;
     public static final CountryDTO COUNTRY_DTO_AFTER_SAVE;
     public static final Country COUNTRY_BEFORE_SAVE;
@@ -20,7 +22,12 @@ public class TestObjectFactory {
     public static final CustomerDTO CUSTOMER_DTO_EXPECTED;
     public static final Customer CUSTOMER_BEFORE_SAVE;
     public static final Customer CUSTOMER_AFTER_SAVE;
+    //update
+    public static final Customer CUSTOMER_AFTER_UPDATE;
+    public static final CustomerUpdateDTO CUSTOMER_UPDATE_DTO;
 
+
+    //create
     public static final String CUSTOMER_NAME = "Ravil";
     public static final String CUSTOMER_SURNAME = "Allayarov";
     public static final String COUNTRY_CODE = "RUS";
@@ -28,8 +35,12 @@ public class TestObjectFactory {
     public static final String EMAIL = "test@mail.ru";
     public static final String TELEGRAM_ID = "@test";
     public static final Long ID = 1L;
+    //update
+    public static final String NEW_CUSTOMER_NAME = "NewName";
+    public static final String NEW_CUSTOMER_SURNAME = "NewSurname";
 
     static  {
+        //create
         COUNTRY_DTO_BEFORE_SAVE = createCountryDTO(ID, null, null);
         COUNTRY_DTO_AFTER_SAVE = createCountryDTO(ID, COUNTRY_CODE, COUNTRY_NAME);
         COUNTRY_BEFORE_SAVE = createCountry(ID, null, null);
@@ -48,6 +59,11 @@ public class TestObjectFactory {
                 COUNTRY_BEFORE_SAVE, CONTACT_DETAILS_BEFORE_SAVE);
         CUSTOMER_AFTER_SAVE = createCustomer(ID, CUSTOMER_NAME, CUSTOMER_SURNAME,
                 COUNTRY_AFTER_SAVE, CONTACT_DETAILS_AFTER_SAVE);
+
+        //update
+        CUSTOMER_AFTER_UPDATE = createCustomer(ID, NEW_CUSTOMER_NAME, NEW_CUSTOMER_SURNAME,
+                COUNTRY_AFTER_SAVE, CONTACT_DETAILS_AFTER_SAVE);
+        CUSTOMER_UPDATE_DTO = createCustomerUpdateDTO(NEW_CUSTOMER_NAME, NEW_CUSTOMER_SURNAME);
     }
 
     public static CustomerDTO createCustomerDTO(Long id, String name, String surname,
@@ -101,6 +117,13 @@ public class TestObjectFactory {
                 .id(id)
                 .email(email)
                 .telegramId(telegramId)
+                .build();
+    }
+
+    public static CustomerUpdateDTO createCustomerUpdateDTO(String name, String surname) {
+        return CustomerUpdateDTO.builder()
+                .name(name)
+                .surname(surname)
                 .build();
     }
 }

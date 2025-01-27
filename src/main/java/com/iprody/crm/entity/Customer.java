@@ -24,7 +24,7 @@ public class Customer extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "country_code_id")
     private Country country;
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "contact_details_id")
     private ContactDetails contactDetails;
     @Column(name = "profile_ref", nullable = true)

@@ -1,4 +1,4 @@
-package com.iprody.crm.dto;
+package com.iprody.crm.dto.create;
 
 import com.iprody.crm.validator.ValidTelegram;
 import jakarta.validation.constraints.Email;
@@ -18,7 +18,6 @@ public class ContactDetailsDTO {
     @Size(max = 50, message = "email cannot be more than 50 characters")
     @Email(message = "email should be correct")
     private String email;
-    @NotBlank(message = "telegram cannot be blank")
     @Size(max = 50, message = "telegram cannot be more than 50 characters")
     @ValidTelegram
     private String telegramId;

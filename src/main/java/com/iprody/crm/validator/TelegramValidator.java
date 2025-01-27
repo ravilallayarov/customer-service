@@ -6,6 +6,9 @@ import jakarta.validation.ConstraintValidatorContext;
 public class TelegramValidator implements ConstraintValidator<ValidTelegram, String> {
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
-        return s != null && s.startsWith("@");
+        if (s == null) {
+            return true;
+        }
+        return s.startsWith("@");
     }
 }

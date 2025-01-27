@@ -1,9 +1,11 @@
 package com.iprody.crm.unit;
 
-import com.iprody.crm.dto.CustomerDTO;
+import com.iprody.crm.dto.create.CustomerDTO;
+import com.iprody.crm.dto.update.CustomerUpdateDTO;
 import com.iprody.crm.entity.Customer;
 import com.iprody.crm.exception.NotFoundException;
 import com.iprody.crm.mapper.CustomerMapper;
+import com.iprody.crm.mapper.CustomerUpdateMapper;
 import com.iprody.crm.repository.CustomerRepository;
 import com.iprody.crm.service.ContactDetailsService;
 import com.iprody.crm.service.CountryService;
@@ -27,6 +29,8 @@ import static com.iprody.crm.testdata.TestObjectFactory.*;
 public class CustomerServiceUnitTest {
     @Mock
     private CustomerMapper customerMapper;
+    @Mock
+    private CustomerUpdateMapper customerUpdateMapper;
     @Mock
     private CountryService countryService;
     @Mock
@@ -52,7 +56,7 @@ public class CustomerServiceUnitTest {
 
         CustomerDTO customerDTOActual = customerService.save(CUSTOMER_DTO_BEFORE_SAVE).block();
 
-        checkCustomerDTOExpectedAndCustomerDTOActual(CUSTOMER_DTO_EXPECTED, customerDTOActual);
+        checkCustomerExpectedAndCustomerActual(CUSTOMER_DTO_EXPECTED, customerDTOActual);
 
         Mockito.verify(countryService).findById(CUSTOMER_DTO_BEFORE_SAVE.getCountryDTO());
         Mockito.verify(contactDetailsService).save(CUSTOMER_DTO_BEFORE_SAVE.getContactDetailsDTO());
@@ -65,7 +69,7 @@ public class CustomerServiceUnitTest {
     public void should_be_thrown_an_exception_when_saving_the_customer() {
         Mockito.when(countryService.findById(CUSTOMER_DTO_BEFORE_SAVE.getCountryDTO()))
                 .thenThrow(new NotFoundException("Country with this id "
-                + CUSTOMER_DTO_BEFORE_SAVE.getCountryDTO().getId() + " not found"));
+                        + CUSTOMER_DTO_BEFORE_SAVE.getCountryDTO().getId() + " not found"));
 
         Assertions.assertThrows(NotFoundException.class, () -> customerService.save(CUSTOMER_DTO_BEFORE_SAVE));
         Mockito.verify(countryService).findById(CUSTOMER_DTO_BEFORE_SAVE.getCountryDTO());
@@ -74,17 +78,15 @@ public class CustomerServiceUnitTest {
 
     @Test
     public void findById_should_return_customer() {
-        Optional<Customer> customerDTOOptionalAfterSave = Optional.of(CUSTOMER_AFTER_SAVE);
-        Mockito.doReturn(customerDTOOptionalAfterSave).when(customerRepository).findById(ID);
-        Mockito.doReturn(CUSTOMER_DTO_EXPECTED).when(customerMapper).toDto(CUSTOMER_AFTER_SAVE);
+        Optional<Customer> customerOptionalAfterSave = Optional.of(CUSTOMER_AFTER_SAVE);
+        Mockito.doReturn(customerOptionalAfterSave).when(customerRepository).findById(ID);
 
         StepVerifier.create(customerService.findById(ID))
-                .assertNext(customerDTOActual ->
-                        checkCustomerDTOExpectedAndCustomerDTOActual(CUSTOMER_DTO_EXPECTED, customerDTOActual))
+                .assertNext(customerActual ->
+                        checkCustomerExpectedAndCustomerActual(CUSTOMER_AFTER_SAVE, customerActual))
                 .verifyComplete();
 
         Mockito.verify(customerRepository).findById(ID);
-        Mockito.verify(customerMapper).toDto(CUSTOMER_AFTER_SAVE);
     }
 
     @Test
@@ -97,15 +99,50 @@ public class CustomerServiceUnitTest {
                     Assertions.assertInstanceOf(NotFoundException.class, throwable);
                     Assertions.assertEquals(errorMessage, throwable.getMessage());
                 });
-
         Mockito.verify(customerRepository).findById(ID);
     }
 
-    private void checkCustomerDTOExpectedAndCustomerDTOActual(CustomerDTO expected, CustomerDTO actual) {
+    @Test
+    public void updateById_should_update_customer() {
+        Optional<Customer> customerById = Optional.of(CUSTOMER_AFTER_SAVE);
+        Customer customerExpected = CUSTOMER_AFTER_UPDATE;
+
+        Mockito.doReturn(customerById).when(customerRepository).findById(ID);
+        Mockito.doAnswer(invocationOnMock -> {
+            CustomerUpdateDTO customerUpdateDTO = invocationOnMock.getArgument(0);
+            Customer customer = invocationOnMock.getArgument(1);
+            customer.setName(customerUpdateDTO.getName());
+            customer.setSurname(customerUpdateDTO.getSurname());
+            return null;
+        }).when(customerUpdateMapper).updateCustomerFromDTO(CUSTOMER_UPDATE_DTO, customerById.get());
+        Mockito.doReturn(customerExpected).when(customerRepository).save(customerById.get());
+
+        StepVerifier.create(customerService.updateById(ID, CUSTOMER_UPDATE_DTO))
+                .assertNext(customerActual -> {
+                    Assertions.assertEquals(customerExpected.getName(), customerActual.getName());
+                    Assertions.assertEquals(customerExpected.getSurname(), customerActual.getSurname());
+                })
+                .verifyComplete();
+
+        Mockito.verify(customerRepository).findById(ID);
+        Mockito.verify(customerUpdateMapper).updateCustomerFromDTO(CUSTOMER_UPDATE_DTO, customerById.get());
+        Mockito.verify(customerRepository).save(customerById.get());
+    }
+
+    private void checkCustomerExpectedAndCustomerActual(CustomerDTO expected, CustomerDTO actual) {
         Assertions.assertNotNull(actual);
         Assertions.assertEquals(expected.getId(), actual.getId());
         Assertions.assertEquals(expected.getCountryDTO(), actual.getCountryDTO());
         Assertions.assertEquals(expected.getContactDetailsDTO(), actual.getContactDetailsDTO());
+        Assertions.assertEquals(expected.getName(), actual.getName());
+        Assertions.assertEquals(expected.getSurname(), actual.getSurname());
+    }
+
+    private void checkCustomerExpectedAndCustomerActual(Customer expected, Customer actual) {
+        Assertions.assertNotNull(actual);
+        Assertions.assertEquals(expected.getId(), actual.getId());
+        Assertions.assertEquals(expected.getCountry(), actual.getCountry());
+        Assertions.assertEquals(expected.getContactDetails(), actual.getContactDetails());
         Assertions.assertEquals(expected.getName(), actual.getName());
         Assertions.assertEquals(expected.getSurname(), actual.getSurname());
     }

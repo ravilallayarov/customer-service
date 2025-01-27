@@ -1,6 +1,6 @@
 package com.iprody.crm.mapper;
 
-import com.iprody.crm.dto.CustomerDTO;
+import com.iprody.crm.dto.create.CustomerDTO;
 import com.iprody.crm.entity.Customer;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

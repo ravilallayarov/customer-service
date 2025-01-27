@@ -1,6 +1,6 @@
 package com.iprody.crm.mapper;
 
-import com.iprody.crm.dto.CountryDTO;
+import com.iprody.crm.dto.create.CountryDTO;
 import com.iprody.crm.entity.Country;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
