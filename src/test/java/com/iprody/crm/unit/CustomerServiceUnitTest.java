@@ -129,6 +129,20 @@ public class CustomerServiceUnitTest {
         Mockito.verify(customerRepository).save(customerById.get());
     }
 
+    @Test
+    public void deleteById_should_delete_customer() {
+        Optional<Customer> customerById = Optional.of(CUSTOMER_AFTER_SAVE);
+
+        Mockito.doReturn(customerById).when(customerRepository).findById(ID);
+        Mockito.doNothing().when(customerRepository).deleteById(ID);
+
+        StepVerifier.create(customerService.deleteById(ID))
+                .verifyComplete();
+
+        Mockito.verify(customerRepository).findById(ID);
+        Mockito.verify(customerRepository).deleteById(ID);
+    }
+
     private void checkCustomerExpectedAndCustomerActual(CustomerDTO expected, CustomerDTO actual) {
         Assertions.assertNotNull(actual);
         Assertions.assertEquals(expected.getId(), actual.getId());
