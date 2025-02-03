@@ -8,6 +8,9 @@ import com.iprody.crm.entity.ContactDetails;
 import com.iprody.crm.entity.Country;
 import com.iprody.crm.entity.Customer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TestObjectFactory {
     //create
     public static final CountryDTO COUNTRY_DTO_BEFORE_SAVE;
@@ -38,6 +41,10 @@ public class TestObjectFactory {
     //update
     public static final String NEW_CUSTOMER_NAME = "NewName";
     public static final String NEW_CUSTOMER_SURNAME = "NewSurname";
+
+
+    public static final List<String> COUNTRY_CODES = List.of("RUS", "CAN", "FRA", "CHN", "JPN");
+    public static final List<String> COUNTRY_NAMES = List.of("Russia", "Canada", "France", "China", "Japan");
 
     static  {
         //create
@@ -125,5 +132,15 @@ public class TestObjectFactory {
                 .name(name)
                 .surname(surname)
                 .build();
+    }
+
+    public static List<Customer> createCustomersListAfterSave() {
+        List<Customer> customers = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            Country country = createCountry(ID + i, COUNTRY_CODES.get(i), COUNTRY_NAMES.get(i));
+            ContactDetails contactDetails = createContactDetails(ID + i, i + EMAIL, TELEGRAM_ID + i);
+            customers.add(createCustomer(ID + i, CUSTOMER_NAME + i, CUSTOMER_SURNAME + i, country, contactDetails));
+        }
+        return customers;
     }
 }

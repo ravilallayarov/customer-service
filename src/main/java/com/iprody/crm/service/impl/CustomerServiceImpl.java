@@ -1,5 +1,6 @@
 package com.iprody.crm.service.impl;
 
+import com.iprody.crm.dto.getAll.RequestForGetAllCustomers;
 import com.iprody.crm.dto.create.CustomerDTO;
 import com.iprody.crm.dto.update.ContactDetailsUpdateDTO;
 import com.iprody.crm.dto.update.CustomerUpdateDTO;
@@ -13,11 +14,17 @@ import com.iprody.crm.repository.CustomerRepository;
 import com.iprody.crm.service.ContactDetailsService;
 import com.iprody.crm.service.CountryService;
 import com.iprody.crm.service.CustomerService;
+import com.iprody.crm.util.CustomerSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+
+import java.util.List;
 
 
 @Service
@@ -84,6 +91,18 @@ public class CustomerServiceImpl implements CustomerService {
                 .doOnSuccess((ignored) -> log.info("Customer successfully deleted by id: {}", id))
                 .doOnError(error -> log.info("Error when trying to delete customer by id: {}", id))
                 .then();
+    }
+
+    @Override
+    public Mono<List<Customer>> getAll(RequestForGetAllCustomers request) {
+        log.info("trying to find all customers with filtering ang pagination");
+        Specification<Customer> spec = CustomerSpecification.buildSpecification(request);
+        Sort sort = CustomerSpecification.buildSort(request);
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getLimit(), sort);
+        return Mono.fromCallable(() -> customerRepository.findAll(spec, pageRequest).getContent())
+                .subscribeOn(Schedulers.boundedElastic())
+                .doOnSuccess((customers -> log.info("customers successfully find with filtering and pagination")))
+                .doOnError((error) -> log.info("Error when trying to find all customers", error));
     }
 
     private void checkIfContactDetailsExists(ContactDetailsUpdateDTO contactDetailsUpdateDTO) {

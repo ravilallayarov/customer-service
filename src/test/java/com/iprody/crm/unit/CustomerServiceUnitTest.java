@@ -1,6 +1,7 @@
 package com.iprody.crm.unit;
 
 import com.iprody.crm.dto.create.CustomerDTO;
+import com.iprody.crm.dto.getAll.RequestForGetAllCustomers;
 import com.iprody.crm.dto.update.CustomerUpdateDTO;
 import com.iprody.crm.entity.Customer;
 import com.iprody.crm.exception.NotFoundException;
@@ -17,9 +18,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.iprody.crm.testdata.TestObjectFactory.*;
@@ -141,6 +146,26 @@ public class CustomerServiceUnitTest {
 
         Mockito.verify(customerRepository).findById(ID);
         Mockito.verify(customerRepository).deleteById(ID);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void getAll_should_return_all_customers() {
+        RequestForGetAllCustomers request = new RequestForGetAllCustomers();
+        List<Customer> expected = createCustomersListAfterSave();
+        PageImpl<Customer> page = new PageImpl<>(expected);
+
+        Mockito.doReturn(page).when(customerRepository).findAll(Mockito.any(Specification.class), Mockito.any(PageRequest.class));
+
+        StepVerifier.create(customerService.getAll(request))
+                .assertNext((actual) -> {
+                    for (int i = 0; i < actual.size(); i++) {
+                        checkCustomerExpectedAndCustomerActual(expected.get(i), actual.get(i));
+                    }
+                })
+                .verifyComplete();
+
+        Mockito.verify(customerRepository).findAll(Mockito.any(Specification.class), Mockito.any(PageRequest.class));
     }
 
     private void checkCustomerExpectedAndCustomerActual(CustomerDTO expected, CustomerDTO actual) {
