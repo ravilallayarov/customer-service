@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: update-column
+      author: Ravil Allayarov
+      changes:
+        - addUniqueConstraint:
+            columnNames: telegram_id
+            tableName: contact_details
+            constraintName: unique_telegram_id

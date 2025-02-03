@@ -75,7 +75,7 @@ public class CustomerIT {
                 .exchange();
 
         WebTestClient.ResponseSpec customerResponse = webTestClient.get()
-                .uri(String.format("/customers/%s", ID))
+                .uri(String.format("/customers/%d", ID))
                 .exchange()
                 .expectStatus().isOk();
         checkCustomerResponse(customerResponse);
@@ -87,6 +87,33 @@ public class CustomerIT {
                 .uri(String.format("/customers/%d", 2))
                 .exchange()
                 .expectStatus().isNotFound();
+    }
+
+    @Test
+    public void updateById_successfully_updated() {
+        String requestForCreate = jsonRequestForCreateCustomer();
+        String requestForUpdate = jsonRequestForUpdateCustomer();
+
+        //create customer
+        webTestClient.post()
+                .uri("/customers/new")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestForCreate).exchange();
+
+        //update customer
+        webTestClient.post()
+                .uri(String.format("/customers/%d/update", ID))
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestForUpdate).exchange();
+
+        webTestClient.get()
+                .uri(String.format("/customers/%d", ID))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.name").isEqualTo(NEW_CUSTOMER_NAME)
+                .jsonPath("$.surname").isEqualTo(NEW_CUSTOMER_SURNAME);
+
     }
 
     private void checkCustomerResponse(WebTestClient.ResponseSpec response) {
@@ -116,5 +143,14 @@ public class CustomerIT {
                    }
                 }
                 """, CUSTOMER_NAME, CUSTOMER_SURNAME, ID, EMAIL, TELEGRAM_ID);
+    }
+
+    private String jsonRequestForUpdateCustomer() {
+        return String.format("""
+                {
+                   "name":"%s",
+                   "surname":"%s"
+                }
+                """, NEW_CUSTOMER_NAME, NEW_CUSTOMER_SURNAME);
     }
 }

@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/create-and-insert-country-table.yaml
   - include:
       file: db/changelog/create-customer-table.yaml
+  - include:
+      file: db/changelog/update-column-contact-details-table.yaml

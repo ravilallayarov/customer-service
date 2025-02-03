@@ -1,4 +1,4 @@
-package com.iprody.crm.dto;
+package com.iprody.crm.dto.create;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

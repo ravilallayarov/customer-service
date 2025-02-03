@@ -1,6 +1,6 @@
 package com.iprody.crm.service.impl;
 
-import com.iprody.crm.dto.CountryDTO;
+import com.iprody.crm.dto.create.CountryDTO;
 import com.iprody.crm.entity.Country;
 import com.iprody.crm.exception.NotFoundException;
 import com.iprody.crm.repository.CountryRepository;

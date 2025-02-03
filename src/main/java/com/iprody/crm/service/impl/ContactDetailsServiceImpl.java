@@ -1,6 +1,6 @@
 package com.iprody.crm.service.impl;
 
-import com.iprody.crm.dto.ContactDetailsDTO;
+import com.iprody.crm.dto.create.ContactDetailsDTO;
 import com.iprody.crm.entity.ContactDetails;
 import com.iprody.crm.exception.AlreadyExistException;
 import com.iprody.crm.mapper.ContactDetailsMapper;
@@ -26,7 +26,7 @@ public class ContactDetailsServiceImpl implements ContactDetailsService {
         String email = contactDetailsToSave.getEmail();
         String telegramId = contactDetailsToSave.getTelegramId();
         return Mono.fromCallable(() -> {
-                    checkContactDetails(email, telegramId);
+                    checkIfContactDetailsExists(email, telegramId);
                     return contactDetailsRepository.save(contactDetailsToSave);
                 })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -34,11 +34,12 @@ public class ContactDetailsServiceImpl implements ContactDetailsService {
                 .doOnError(error -> log.error("Error when trying to save contactDetails: {}", contactDetailsToSave, error));
     }
 
-    private void checkContactDetails(String email, String telegramId) {
-        if (contactDetailsRepository.existsByEmail(email)) {
+    @Override
+    public void checkIfContactDetailsExists(String email, String telegramId) {
+        if (email != null && contactDetailsRepository.existsByEmail(email)) {
             throw new AlreadyExistException("Email already exists: " + email);
         }
-        if (contactDetailsRepository.existsByTelegramId(telegramId)) {
+        if (telegramId != null && contactDetailsRepository.existsByTelegramId(telegramId)) {
             throw new AlreadyExistException("Telegram already exists: " + telegramId);
         }
     }

@@ -1,11 +1,14 @@
 package com.iprody.crm.service.impl;
 
-import com.iprody.crm.dto.CustomerDTO;
+import com.iprody.crm.dto.create.CustomerDTO;
+import com.iprody.crm.dto.update.ContactDetailsUpdateDTO;
+import com.iprody.crm.dto.update.CustomerUpdateDTO;
 import com.iprody.crm.entity.ContactDetails;
 import com.iprody.crm.entity.Country;
 import com.iprody.crm.entity.Customer;
 import com.iprody.crm.exception.NotFoundException;
 import com.iprody.crm.mapper.CustomerMapper;
+import com.iprody.crm.mapper.CustomerUpdateMapper;
 import com.iprody.crm.repository.CustomerRepository;
 import com.iprody.crm.service.ContactDetailsService;
 import com.iprody.crm.service.CountryService;
@@ -25,6 +28,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final ContactDetailsService contactDetailsService;
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final CustomerUpdateMapper customerUpdateMapper;
 
     @Override
     public Mono<CustomerDTO> save(CustomerDTO customerDTO) {
@@ -47,14 +51,35 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Mono<CustomerDTO> findById(Long id) {
+    public Mono<Customer> findById(Long id) {
         log.info("trying to find customer by id: {}", id);
         return Mono.fromCallable(() -> customerRepository.findById(id))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(Mono::justOrEmpty)
                 .doOnNext((customer) -> log.info("Customer successfully find by id: {}, {}", id, customer))
                 .switchIfEmpty(Mono.error(() -> new NotFoundException("Customer with id: " + id + " not found")))
-                .doOnError((error) -> log.info("Error when searching customer by id: {}", id, error))
-                .map(customerMapper::toDto);
+                .doOnError((error) -> log.info("Error when searching customer by id: {}", id, error));
+    }
+
+    @Override
+    public Mono<Customer> updateById(Long id, CustomerUpdateDTO customerUpdateDTO) {
+        log.info("trying to update customer by id: {}", id);
+        return findById(id)
+                .flatMap(customerById -> {
+                    checkIfContactDetailsExists(customerUpdateDTO.getContactDetailsUpdateDTO());
+                    customerUpdateMapper.updateCustomerFromDTO(customerUpdateDTO, customerById);
+                    return Mono.fromCallable(() -> customerRepository.save(customerById))
+                            .subscribeOn(Schedulers.boundedElastic());
+                })
+                .doOnSuccess((savedCustomer) -> log.info("customer successfully updated {}", savedCustomer))
+                .doOnError((error) -> log.error("Error when trying to save a customer: {}", customerUpdateDTO, error));
+    }
+
+    private void checkIfContactDetailsExists(ContactDetailsUpdateDTO contactDetailsUpdateDTO) {
+        if (contactDetailsUpdateDTO != null) {
+            String email = contactDetailsUpdateDTO.getEmail();
+            String telegramId = contactDetailsUpdateDTO.getTelegramId();
+            contactDetailsService.checkIfContactDetailsExists(email, telegramId);
+        }
     }
 }

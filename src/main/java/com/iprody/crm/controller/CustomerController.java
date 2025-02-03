@@ -1,6 +1,8 @@
 package com.iprody.crm.controller;
 
-import com.iprody.crm.dto.CustomerDTO;
+import com.iprody.crm.dto.create.CustomerDTO;
+import com.iprody.crm.dto.update.CustomerUpdateDTO;
+import com.iprody.crm.mapper.CustomerMapper;
 import com.iprody.crm.service.impl.CustomerServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class CustomerController {
     private final CustomerServiceImpl customerService;
+    private final CustomerMapper customerMapper;
 
     @PostMapping("/new")
     public Mono<ResponseEntity<CustomerDTO>> save(@Valid @RequestBody CustomerDTO customerDTO) {
@@ -24,6 +27,14 @@ public class CustomerController {
     @GetMapping("/{id}")
     public Mono<ResponseEntity<CustomerDTO>> findById(@PathVariable Long id) {
         return customerService.findById(id)
+                .map(customerMapper::toDto)
+                .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/{id}/update")
+    public Mono<ResponseEntity<CustomerDTO>> update(@PathVariable Long id, @Valid @RequestBody CustomerUpdateDTO customerUpdateDTO) {
+        return customerService.updateById(id, customerUpdateDTO)
+                .map(customerMapper::toDto)
                 .map(ResponseEntity::ok);
     }
 }
