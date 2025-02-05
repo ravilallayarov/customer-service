@@ -116,6 +116,31 @@ public class CustomerIT {
 
     }
 
+    @Test
+    public void deleteById_successfully_deleted() {
+        String requestForCreate = jsonRequestForCreateCustomer();
+
+        //create customer
+        webTestClient.post()
+                .uri("/customers/new")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestForCreate)
+                .exchange()
+                .expectStatus().isCreated();
+
+        //delete customer
+        webTestClient.delete()
+                .uri(String.format("/customers/%d/delete", ID))
+                .exchange()
+                .expectStatus().isNoContent();
+
+        //trying to find customer after delete
+        webTestClient.get()
+                .uri(String.format("/customers/%d", ID))
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
     private void checkCustomerResponse(WebTestClient.ResponseSpec response) {
         response.expectBody()
                 .jsonPath("$.id").isEqualTo(ID)

@@ -75,6 +75,17 @@ public class CustomerServiceImpl implements CustomerService {
                 .doOnError((error) -> log.error("Error when trying to save a customer: {}", customerUpdateDTO, error));
     }
 
+    @Override
+    public Mono<Void> deleteById(Long id) {
+        log.info("trying to delete customer by id: {}", id);
+        return findById(id)
+                .flatMap(customerById -> Mono.fromRunnable(() -> customerRepository.deleteById(id))
+                        .subscribeOn(Schedulers.boundedElastic()))
+                .doOnSuccess((ignored) -> log.info("Customer successfully deleted by id: {}", id))
+                .doOnError(error -> log.info("Error when trying to delete customer by id: {}", id))
+                .then();
+    }
+
     private void checkIfContactDetailsExists(ContactDetailsUpdateDTO contactDetailsUpdateDTO) {
         if (contactDetailsUpdateDTO != null) {
             String email = contactDetailsUpdateDTO.getEmail();

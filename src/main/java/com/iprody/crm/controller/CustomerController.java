@@ -37,4 +37,10 @@ public class CustomerController {
                 .map(customerMapper::toDto)
                 .map(ResponseEntity::ok);
     }
+
+    @DeleteMapping("/{id}/delete")
+    public Mono<ResponseEntity<Void>> delete(@PathVariable Long id) {
+        return customerService.deleteById(id)
+                .then(Mono.just(ResponseEntity.noContent().build()));
+    }
 }

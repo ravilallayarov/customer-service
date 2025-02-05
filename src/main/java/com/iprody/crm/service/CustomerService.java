@@ -9,4 +9,5 @@ public interface CustomerService {
     Mono<CustomerDTO> save(CustomerDTO customerDTO);
     Mono<Customer> findById(Long id);
     Mono<Customer> updateById(Long id, CustomerUpdateDTO customerUpdateDTO);
+    Mono<Void> deleteById(Long id);
 }
