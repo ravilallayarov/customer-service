@@ -15,6 +15,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
+
 import static com.iprody.crm.testdata.TestObjectFactory.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -141,6 +143,50 @@ public class CustomerIT {
                 .expectStatus().isNotFound();
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void getAll_finds_successfully() {
+        createCustomers();
+
+        webTestClient.get()
+                .uri("/customers")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$[*].id").value(ids -> {
+                    List<Long> idsList = ((List<Integer>) ids).stream()
+                            .map(Long::valueOf)
+                            .toList();
+                    for (int i = 0; i < idsList.size(); i++) {
+                        Assertions.assertTrue(idsList.contains(ID + i));
+                    }
+                })
+                .jsonPath("$[*].name").value(names -> {
+                    List<String> nameList = (List<String>) names;
+                    for (int i = 0; i < nameList.size(); i++) {
+                        Assertions.assertTrue(nameList.contains(CUSTOMER_NAME + i));
+                    }
+                })
+                .jsonPath("$[*].surname").value(surnames -> {
+                    List<String> surnamesList = (List<String>) surnames;
+                    for (int i = 0; i < surnamesList.size(); i++) {
+                        Assertions.assertTrue(surnamesList.contains(CUSTOMER_SURNAME + i));
+                    }
+                })
+                .jsonPath("$[*].contactDetailsDTO.email").value(emails -> {
+                    List<String> emailList = (List<String>) emails;
+                    for (int i = 0; i < emailList.size(); i++) {
+                        Assertions.assertTrue(emailList.contains(i + EMAIL));
+                    }
+                })
+                .jsonPath("$[*].contactDetailsDTO.telegramId").value(telegrams -> {
+                    List<String> telegramsList = (List<String>) telegrams;
+                    for (int i = 0; i < telegramsList.size(); i++) {
+                        Assertions.assertTrue(telegramsList.contains(TELEGRAM_ID + i));
+                    }
+                });
+    }
+
     private void checkCustomerResponse(WebTestClient.ResponseSpec response) {
         response.expectBody()
                 .jsonPath("$.id").isEqualTo(ID)
@@ -177,5 +223,30 @@ public class CustomerIT {
                    "surname":"%s"
                 }
                 """, NEW_CUSTOMER_NAME, NEW_CUSTOMER_SURNAME);
+    }
+
+    private void createCustomers() {
+        for (int i = 0; i < 5; i++) {
+            String request = String.format("""
+                    {
+                       "name":"%s",
+                       "surname":"%s",
+                       "countryDTO":{
+                          "id":%d
+                       },
+                       "contactDetailsDTO":{
+                          "email":"%s",
+                          "telegramId":"%s"
+                       }
+                    }
+                    """, CUSTOMER_NAME + i, CUSTOMER_SURNAME + i, ID + i, i + EMAIL, TELEGRAM_ID + i);
+
+            webTestClient.post()
+                    .uri("/customers/new")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(request)
+                    .exchange()
+                    .expectStatus().isCreated();
+        }
     }
 }
