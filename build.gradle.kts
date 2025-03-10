@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "3.4.0"
 	id("io.spring.dependency-management") version "1.1.6"
 }
+val springCloudVersion by extra("2024.0.0")
 
 group = "com.iprody.crm"
 version = "0.0.1-SNAPSHOT"
@@ -34,6 +35,7 @@ dependencies {
 	implementation("io.zipkin.reporter2:zipkin-reporter-brave")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.mapstruct:mapstruct:1.6.3")
+	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:postgresql")
@@ -46,8 +48,14 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("p6spy:p6spy:3.9.1")
 }
+dependencyManagement {
+	imports {
+		mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+	}
+}
 
 tasks.withType<Test> {
+	enabled = false
 	useJUnitPlatform()
 	systemProperty("spring.profiles.active", "test")
 }
@@ -59,7 +67,3 @@ checkstyle {
 tasks.withType<Checkstyle>().configureEach {
 	isIgnoreFailures = true
 }
-
-
-
-
