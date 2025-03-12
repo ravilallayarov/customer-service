@@ -6,6 +6,8 @@ services:
     container_name: zipkin
     ports:
       - "9411:9411"
+    networks:
+      - global-network
 
   db:
     image: postgres
@@ -16,6 +18,8 @@ services:
       POSTGRES_DB: customer_service_database
     ports:
       - "5432:5432"
+    networks:
+      - global-network
 
   customer-service:
     build:
@@ -29,4 +33,9 @@ services:
     depends_on:
       - db
       - zipkin
+    networks:
+      - global-network
 
+networks:
+  global-network:
+    external: true

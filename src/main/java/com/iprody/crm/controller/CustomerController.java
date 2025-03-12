@@ -1,7 +1,7 @@
 package com.iprody.crm.controller;
 
-import com.iprody.crm.dto.getAll.RequestForGetAllCustomers;
 import com.iprody.crm.dto.create.CustomerDTO;
+import com.iprody.crm.dto.getAll.RequestForGetAllCustomers;
 import com.iprody.crm.dto.update.CustomerUpdateDTO;
 import com.iprody.crm.entity.Customer;
 import com.iprody.crm.mapper.CustomerMapper;
